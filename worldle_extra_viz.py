@@ -9,11 +9,12 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.offline import plot
 import plotly.express as px
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt; plt.style.use('ggplot')
 import seaborn as sns
 
 pd.DataFrame.iteritems = pd.DataFrame.items
 
+colors = ['#009fbf', '#58508d']
 people = ['Laura', 'Sami']
 
 #%% Get data
@@ -140,45 +141,34 @@ for i in range(1,catl):
 
 #%% Scores by continent
 
-country_names = worldles[['name', 'iso2', 'continent']].drop_duplicates()
-country_names['continent'] = country_names['continent'].replace({
-    'Insular Oceania': 'Oceania'})
-country_name_map = country_names.set_index('name').to_dict()
-name_iso2 = country_name_map['iso2']
-name_cont = country_name_map['continent']
-repeatp  # country names as index
-
-cont_l = repeatp.loc[:, 'Laura'].copy()
-cont_s = repeatp.loc[:, 'Sami'].copy()
-
-for d in [cont_l, cont_s]:
-    d['iso2'] = d.index.to_series().replace(name_iso2)
-    d['cont'] = d.index.to_series().replace(name_cont)
-
-fig, axs = plt.subplots(2, 3, sharey=True, sharex=True)
-ax_map = [('North America', (0,0)), ('Europe', (0,1)), ('Asia', (0,2)),
-          ('South America', (1,0)), ('Africa', (1,1)), ('Oceania', (1,2))]
-for c, a in ax_map:
-    cont_s.loc[cont_s['cont']==c, [1,2,3,4,5,6,7]].T.plot(color='grey',
-                                                          alpha=0.2, legend=None,
-                                                          ax=axs[a])
-
-#%% Another attempt
-
-# d = worldles[(worldles['person']=='Sami') & (worldles['continent']=='Europe')]
-# d.set_index('date', inplace=True)
-# for y in [2022, 2023, 2024]:
+# country_names = worldles[['name', 'iso2', 'continent']].drop_duplicates()
+# country_names['continent'] = country_names['continent'].replace({
+#     'Insular Oceania': 'Oceania'})
+# country_name_map = country_names.set_index('name').to_dict()
+# name_iso2 = country_name_map['iso2']
+# name_cont = country_name_map['continent']
 
 worldcont = worldles.loc[:, ['person', 'date', 'score', 'continent']]
 worldcont['year'] = worldcont['date'].dt.year
 fig, axs = plt.subplots(2, 3, sharey=True, sharex=True, figsize=(13, 8))
 ax_map = [('North America', (0,0)), ('Europe', (0,1)), ('Asia', (0,2)),
           ('South America', (1,0)), ('Africa', (1,1)), ('Oceania', (1,2))]
+person_palette = dict(zip(people, colors[::-1]))
 for c, a in ax_map:
     sns.violinplot(data=worldcont.loc[worldcont['continent']==c],
                    x='score', y='year', orient='h',
-                   hue='person', split=True, cut=0, inner=None, ax=axs[a])
+                   hue='person', hue_order=people, split=True, cut=0,
+                   inner=None, ax=axs[a], palette=person_palette,
+                   scale="width", scale_hue=False)
     axs[a].set_title(c)
+    axs[a].set_xlabel('')
+    if c != 'Europe':
+        axs[a].get_legend().set_visible(False)
+    else:
+        axs[a].legend(bbox_to_anchor=(1, 0.75))
+plt.suptitle('Worldle: guesses over time, by continent', fontsize=25)
 plt.tight_layout()
+plt.savefig('Outputs\\Worldle_continent_time.png')
 
 #%% Scores by population / area (did anything buck the trend?)
+
