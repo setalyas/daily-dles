@@ -173,69 +173,11 @@ plt.savefig('Outputs\\Worldle_continent_time.png')
 
 #%% Scores by population / area (did anything buck the trend?)
 
-pop_area = worldles.loc[:, ['person', 'score', 'iso2', 'name', 'population', 'area']].copy()
-
-score_agg = pop_area.loc[:, ['person', 'score', 'name']].groupby(['person', 'name']).mean()
-score_s = score_agg.loc['Sami', :]
+# Tried to do based on the actual score, but differences were too subtle to read
 
 country_info = worldle_countries.copy()
 country_info = country_info.reset_index(drop=True)
 country_info.drop_duplicates(inplace=True)
-
-score_s = score_s.merge(country_info, how='left', left_index=True, right_on='name')
-fig, ax = plt.subplots(1, 1, figsize=(8, 5))
-sns.scatterplot(data=score_s, x='area', y='population', hue='score', ax=ax)
-ax.set_xscale('log')
-ax.set_yscale('log')
-
-#%% As country IDs
-
-orangered = (193, 61, 9)
-coldblue = (9, 25, 193)
-goodgreen = (46, 165, 58)
-score_s['scale_score'] = (score_s['score']-score_s['score'].min())/(score_s['score'].max()-score_s['score'].min())
-def float_to_color(value, color1=goodgreen, color2=orangered):
-    float_tuple = tuple([(a + (b - a) * value)/255 for a, b in zip(color1, color2)])
-    # int_tuple = tuple(map(int, float_tuple))
-    # return mcol.to_hex(int_tuple)
-    return float_tuple
-
-fig, ax = plt.subplots(1, 1, figsize=(10, 10))
-for w, x, y, s in score_s[['iso2', 'population', 'area', 'scale_score']].values:
-    ax.plot((x,),(y,), 'o', c='r', alpha=0.01)
-    ax.annotate(w, (x, y), ha='center', va='center', color=float_to_color(s))
-ax.set_xscale('log')
-ax.set_yscale('log')
-
-#%% Plot for both people
-
-score_agg = pop_area.loc[:, ['person', 'score', 'name']].groupby(['person', 'name']).mean()
-
-country_info = worldle_countries.copy()
-country_info = country_info.reset_index(drop=True)
-country_info.drop_duplicates(inplace=True)
-
-orangered = (193, 61, 9)
-goodgreen = (46, 165, 58)
-def float_to_color(value, color1=goodgreen, color2=orangered):
-    float_tuple = tuple([(a + (b - a) * value)/255 for a, b in zip(color1, color2)])
-    return float_tuple
-
-for p in people:
-    p_scores = score_agg.loc[p, :]
-    p_scores = p_scores.merge(country_info, how='left', left_index=True, right_on='name')
-    p_scores['scale_score'] = (p_scores['score']-p_scores['score'].min())/(p_scores['score'].max()-p_scores['score'].min())
-    fig, ax = plt.subplots(1, 1, figsize=(10, 10))
-    for w, x, y, s in p_scores[['iso2', 'population', 'area', 'scale_score']].values:
-        ax.plot((x,),(y,), 'o', c='r', alpha=0.01)
-        ax.annotate(w, (x, y), ha='center', va='center', color=float_to_color(s))
-    ax.set_xscale('log')
-    ax.set_yscale('log')
-    ax.set_xlabel('Population (log scale)')
-    ax.set_ylabel('Area (log scale)')
-    ax.set_title(p)
-
-#%% Above, but as categories not scores
 
 scorecattocol = {
     'Nailed': 'green',
